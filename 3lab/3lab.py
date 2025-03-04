@@ -15,12 +15,11 @@ def online_split(all_onl):
     return all_current, all_max
 
 def parse(pages_amount):
-    # Настройка опций для безголовного режима (без открытия окна браузера)
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     
-    # Инициализация веб-драйвера (убедитесь, что chromedriver находится в PATH)
+
     driver = webdriver.Chrome(options=options)
     
     names = []
@@ -31,20 +30,15 @@ def parse(pages_amount):
     for page_num in range(pages_amount):
         url = "https://minecraftservers.org/index/" + str(page_num + 1)
         driver.get(url)
-        # Ждём, чтобы страница успела загрузиться
         time.sleep(2)
         
-        # Получаем исходный HTML код страницы
         soup = BeautifulSoup(driver.page_source, "html.parser")
         
-        # Получаем названия серверов
         all_names = soup.find_all('a', href=lambda value: value and '/server/' in value)
-        # Подобно оригиналу берём каждый 4-й элемент
         all_names = all_names[::4]
         all_names_text = [a.text for a in all_names]
         names.extend(all_names_text)
-        
-        # Получаем онлайн-серверы
+
         all_online = soup.find_all(class_="value")
         all_online = all_online[::4]
         all_online_list = [a.text for a in all_online]
@@ -52,7 +46,7 @@ def parse(pages_amount):
         cur_online.extend(all_current_online)
         max_online.extend(all_max_online)
         
-        # Получаем статусы серверов
+
         all_statuses = soup.find_all(class_="value online")
         all_statuses_text = [a.text for a in all_statuses]
         all_statuses_text = all_statuses_text[::2]
@@ -69,6 +63,5 @@ def to_csv(data):
             writer.writerow(row)
 
 if __name__ == '__main__':
-    # Если аргументов нет, парсим 5 страниц, иначе количество страниц из аргумента
     pages = 5 if len(sys.argv) == 1 else int(sys.argv[1])
     to_csv(parse(pages))
